@@ -1,0 +1,29 @@
+[33mcommit 0d388bc6330f9981fa7392d70244231e62293410[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m
+Author: asim1734 <asim.rupani@gmail.com>
+Date:   Fri Jul 18 07:01:25 2025 +0000
+
+    Update core logic.
+
+[33mcommit 04a2121e9e21f92800261353da86558d4775a885[m
+Author: asim1734 <asim.rupani@gmail.com>
+Date:   Fri Jul 18 06:41:52 2025 +0000
+
+    Implement URL shortening logic
+
+[33mcommit 518c68f41256ad0b7a2cce3e8f30738727754301[m
+Author: asim1734 <asim.rupani@gmail.com>
+Date:   Fri Jul 18 06:24:02 2025 +0000
+
+    Implement database connection
+
+[33mcommit 3de2e131f504b28068e51f43a581942735a68832[m
+Author: asim1734 <asim.rupani@gmail.com>
+Date:   Fri Jul 18 05:51:51 2025 +0000
+
+    Initial commit, Express set up
+
+[33mcommit 722a0667781aa928644236bbcf096846df9f1d95[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: asim1734 <161436366+asim1734@users.noreply.github.com>
+Date:   Thu Jul 17 19:36:13 2025 +0530
+
+    Initial commit
