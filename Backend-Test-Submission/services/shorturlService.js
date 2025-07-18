@@ -1,5 +1,6 @@
 const shortid = require('shortid');
 const { getDb } = require('../config/db');
+const { log } = require('../../logging-middlware/utils/logger'); 
 
 async function createShortUrl(url, validity, customShortcode) {
     const db = getDb();
@@ -11,14 +12,14 @@ async function createShortUrl(url, validity, customShortcode) {
 
     let newShortId;
     if (customShortcode && typeof customShortcode === 'string' && customShortcode.trim()) {
-       
         const existingCustomShortcode = await urlsCollection.findOne({ shortId: customShortcode });
         if (existingCustomShortcode) {
+            await log('backend', 'warn', 'service', `Custom shortcode '${customShortcode}' already in use.`);
             throw new Error(`Custom shortcode '${customShortcode}' is already in use.`);
         }
-        newShortId = customShortcode; 
+        newShortId = customShortcode;
     } else {
-        newShortId = shortid.generate(); 
+        newShortId = shortid.generate();
     }
 
     const newUrlDocument = {
@@ -29,7 +30,13 @@ async function createShortUrl(url, validity, customShortcode) {
         expiresAt: expiresAt
     };
 
-    await urlsCollection.insertOne(newUrlDocument);
+    try {
+        await urlsCollection.insertOne(newUrlDocument);
+        await log('backend', 'info', 'service', `URL shortened: ${url} to ${newShortId}`);
+    } catch (error) {
+        await log('backend', 'error', 'service', `Failed to insert URL ${url}: ${error.message}`);
+        throw error;
+    }
 
     return {
         shortId: newShortId,
