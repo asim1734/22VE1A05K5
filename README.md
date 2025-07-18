@@ -25,3 +25,20 @@ When a user accesses a shortened URL, they are redirected to the original long U
 Retrieve detailed usage statistics for any shortened URL, including click counts, creation/expiry dates, and last access time.
 
 ![Short ID Analytics Response](./outputs/shortidAnalytics.png)
+
+### 4. Logs
+
+![Logs](./outputs/logOutput.png)
+
+## Architecture
+
+├── Backend-Test-S.../  # Contains the main Express.js application
+│   ├── app.js          # Main application entry point
+│   ├── config/         # Database connection configuration
+│   ├── controllers/    # Handles API request logic
+│   ├── routes/         # Defines API endpoints
+│   └── services/       # Contains core business logic (e.g., URL creation)
+└── logging-middlw.../  # Contains the reusable logging middleware
+├── loggingMiddleware.js # Express middleware for logging
+    |utils
+    └── logger.js            # Utility function for sending structured logs
