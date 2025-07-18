@@ -1,32 +1,39 @@
 const shortid = require('shortid');
 const { getDb } = require('../config/db');
 
-async function createShortUrl(url) { // Removed validity, shortcode
+async function createShortUrl(url, validity, customShortcode) {
     const db = getDb();
     const urlsCollection = db.collection('urls');
 
-    // Basic check for existing URL
-    let existingUrlDoc = await urlsCollection.findOne({ longUrl: url });
-    if (existingUrlDoc) {
-        return {
-            shortId: existingUrlDoc.shortId,
-            message: 'URL already shortened.'
-        };
-    }
+    const defaultValidityMinutes = 30;
+    const validityMinutes = typeof validity === 'number' && validity > 0 ? validity : defaultValidityMinutes;
+    const expiresAt = new Date(Date.now() + validityMinutes * 60 * 1000);
 
-    const newShortId = shortid.generate();
+    let newShortId;
+    if (customShortcode && typeof customShortcode === 'string' && customShortcode.trim()) {
+       
+        const existingCustomShortcode = await urlsCollection.findOne({ shortId: customShortcode });
+        if (existingCustomShortcode) {
+            throw new Error(`Custom shortcode '${customShortcode}' is already in use.`);
+        }
+        newShortId = customShortcode; 
+    } else {
+        newShortId = shortid.generate(); 
+    }
 
     const newUrlDocument = {
         shortId: newShortId,
         longUrl: url,
-        clicks: 0, // Still good to initialize this for future analytics
-        createdAt: new Date()
+        clicks: 0,
+        createdAt: new Date(),
+        expiresAt: expiresAt
     };
 
     await urlsCollection.insertOne(newUrlDocument);
 
     return {
-        shortId: newShortId
+        shortId: newShortId,
+        expiresAt: expiresAt
     };
 }
 

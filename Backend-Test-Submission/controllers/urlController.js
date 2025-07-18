@@ -3,24 +3,24 @@ const { getDb } = require('../config/db');
 const { createShortUrl } = require('../services/shorturlService');
 
 async function handleCreateShortUrl(req, res) {
-    const { url } = req.body;
+    const { url, validity, shortcode } = req.body;
 
     if (!url || typeof url !== 'string') {
-        return res.status(400).json({ error: 'Invalid or missing URL.' });
+        return res.status(400).json({ error: 'Invalid URL.' });
     }
 
     try {
-        const result = await createShortUrl(url);
-
+        const result = await createShortUrl(url, validity, shortcode);
         const fullShortUrl = `${req.protocol}://${req.get('host')}/${result.shortId}`;
-
         return res.status(201).json({
             shortUrl: fullShortUrl,
+            expiresAt: result.expiresAt,
             message: result.message
         });
     } catch (error) {
-        console.error('Error in handleCreateShortUrl:', error.message);
-        return res.status(500).json({ error: 'Server error.' });
+        console.error('Error creating short URL:', error.message);
+        const statusCode = error.message.includes('Custom shortcode') ? 409 : 500;
+        return res.status(statusCode).json({ error: error.message });
     }
 }
 
@@ -30,24 +30,27 @@ async function redirectToLongUrl(req, res) {
     const urlsCollection = db.collection('urls');
 
     try {
-        const result = await urlsCollection.findOneAndUpdate(
+        const urlDoc = await urlsCollection.findOne({ shortId: shortId });
+
+        if (!urlDoc) {
+            return res.status(404).json({ error: 'URL not found.' });
+        }
+
+        if (urlDoc.expiresAt && new Date() > urlDoc.expiresAt) {
+            return res.status(410).json({ error: 'URL expired.' });
+        }
+
+        await urlsCollection.updateOne(
             { shortId: shortId },
             {
                 $inc: { clicks: 1 },
                 $set: { lastAccessedAt: new Date() }
-            },
-            { returnDocument: 'after' }
+            }
         );
 
-        const urlDoc = result.value;
-
-        if (urlDoc) {
-            res.redirect(urlDoc.longUrl);
-        } else {
-            res.status(404).json({ error: 'Short URL not found.' });
-        }
+        res.redirect(urlDoc.longUrl);
     } catch (error) {
-        console.error('Error in redirectToLongUrl:', error.message);
+        console.error('Error redirecting URL:', error.message);
         res.status(500).json({ error: 'Server error.' });
     }
 }
